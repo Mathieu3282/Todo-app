@@ -1,30 +1,119 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html lang="fr">
 <head>
-    <title>Todo App</title>
-</head>
-<body>
-    <h1>Ma Todo App</h1>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Réseau Social</title><style>
+body {
+  font-family: Arial;
+  max-width: 500px;
+  margin: auto;
+  background: #f2f2f2;
+}
 
-    <input type="text" id="taskInput" placeholder="Ajouter une tâche">
-    <button onclick="addTask()">Ajouter</button>
+h2 {
+  text-align: center;
+}
 
-    <ul id="taskList"></ul>
+input, textarea, button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
 
-    <script>
-        function addTask() {
-            let input = document.getElementById("taskInput");
-            let task = input.value;
+button {
+  background: #1877f2;
+  color: white;
+  border: none;
+}
 
-            if (task === "") return;
+.post {
+  background: white;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
 
-            let li = document.createElement("li");
-            li.textContent = task;
+.post img {
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 10px;
+}
 
-            document.getElementById("taskList").appendChild(li);
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+</style></head><body><h2>Mini Réseau Social</h2><input type="text" id="username" placeholder="Ton nom">
+<textarea id="postInput" placeholder="Quoi de neuf ?"></textarea>
+<input type="file" id="imageInput" accept="image/*">
+<button onclick="addPost()">Publier</button><div id="feed"></div><script>
+function addPost() {
+  let user = document.getElementById("username").value;
+  let content = document.getElementById("postInput").value;
+  let imageInput = document.getElementById("imageInput");
 
-            input.value = "";
-        }
-    </script>
-</body>
+  if (user === "" || content === "") return;
+
+  let post = document.createElement("div");
+  post.className = "post";
+
+  let date = new Date().toLocaleString();
+
+  let reader = new FileReader();
+
+  reader.onload = function(e) {
+    post.innerHTML = `
+      <strong>${user}</strong>
+      <p>${content}</p>
+      ${imageInput.files[0] ? `<img src="${e.target.result}">` : ""}
+      <small>${date}</small>
+      <div class="actions">
+        <button onclick="likePost(this)">👍 0</button>
+        <button onclick="deletePost(this)">🗑️</button>
+      </div>
+    `;
+
+    document.getElementById("feed").prepend(post);
+    savePosts();
+  };
+
+  if (imageInput.files[0]) {
+    reader.readAsDataURL(imageInput.files[0]);
+  } else {
+    reader.onload({ target: { result: "" } });
+  }
+
+  document.getElementById("postInput").value = "";
+  document.getElementById("imageInput").value = "";
+}
+
+function likePost(button) {
+  let count = parseInt(button.innerText.split(" ")[1]);
+  count++;
+  button.innerText = "👍 " + count;
+  savePosts();
+}
+
+function deletePost(button) {
+  button.closest(".post").remove();
+  savePosts();
+}
+
+function savePosts() {
+  localStorage.setItem("feed", document.getElementById("feed").innerHTML);
+}
+
+function loadPosts() {
+  let saved = localStorage.getItem("feed");
+  if (saved) {
+    document.getElementById("feed").innerHTML = saved;
+  }
+}
+
+loadPosts();
+</script></body>
 </html>
